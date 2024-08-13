@@ -9,7 +9,10 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {},
     XLayer: {
+      // RPC
       url: "https://testrpc.xlayer.tech",
+      // Metis Sepolia
+      // url: "https://sepolia.metisdevops.link",
       accounts: [PrivateKey],
     },
   },
