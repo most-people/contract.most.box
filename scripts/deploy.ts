@@ -2,17 +2,19 @@ import { ethers } from "hardhat";
 
 async function main() {
   // 获取合约工厂
-  const IPv6Contract = await ethers.getContractFactory("IPv6Contract");
+  const AppVersionContract = await ethers.getContractFactory(
+    "AppVersionContract"
+  );
 
   // 部署合约并等待部署完成
-  const ipv6Contract = await IPv6Contract.deploy();
+  const appVersionContract = await AppVersionContract.deploy();
 
   // 获取合约地址
   // @ts-ignore
-  const address = await ipv6Contract.getAddress();
+  const address = await appVersionContract.getAddress();
 
   // 输出合约地址
-  console.log("IPv6Contract deployed to:", address);
+  console.log("AppVersionContract deployed to:", address);
 }
 
 main().catch((error) => {
