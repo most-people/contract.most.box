@@ -16,8 +16,9 @@ describe("AppVersionContract", function () {
     appVersionContract = await AppVersionContract.deploy();
   });
 
-  it("初始版本号应为空字符串", async function () {
+  it("初始版本号和下载链接应为空字符串", async function () {
     expect(await appVersionContract.getCurrentVersion()).to.equal("");
+    expect(await appVersionContract.getDownloadLink()).to.equal("");
   });
 
   it("应该可以更新和获取版本号", async function () {
@@ -36,9 +37,29 @@ describe("AppVersionContract", function () {
     );
   });
 
-  it("非拥有者不能更新版本号", async function () {
+  it("应该可以更新和获取下载链接", async function () {
+    const downloadLink = "https://example.com/app/download";
+
+    await appVersionContract.updateDownloadLink(downloadLink);
+    expect(await appVersionContract.getDownloadLink()).to.equal(downloadLink);
+
+    // 再次更新下载链接
+    const newDownloadLink = "https://example.com/app/download/v2";
+    await appVersionContract.updateDownloadLink(newDownloadLink);
+    expect(await appVersionContract.getDownloadLink()).to.equal(
+      newDownloadLink
+    );
+  });
+
+  it("非拥有者不能更新版本号和下载链接", async function () {
     await expect(
       appVersionContract.connect(addr1).updateVersion("1.0.0")
+    ).to.be.revertedWith("Only owner can call this function");
+
+    await expect(
+      appVersionContract
+        .connect(addr1)
+        .updateDownloadLink("https://example.com/app/download")
     ).to.be.revertedWith("Only owner can call this function");
   });
 

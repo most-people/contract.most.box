@@ -5,11 +5,17 @@ contract AppVersionContract {
     // 存储APP当前版本号
     string private currentVersion;
 
+    // 存储APP下载链接
+    string private downloadLink;
+
     // 合约拥有者地址
     address private owner;
 
     // 事件：更新版本时触发
     event VersionUpdated(string versionNumber);
+
+    // 事件：更新下载链接时触发
+    event DownloadLinkUpdated(string newLink);
 
     // 构造函数：设置合约拥有者
     constructor() {
@@ -31,6 +37,17 @@ contract AppVersionContract {
     // 获取当前版本号
     function getCurrentVersion() external view returns (string memory) {
         return currentVersion;
+    }
+
+    // 更新下载链接
+    function updateDownloadLink(string calldata newLink) external onlyOwner {
+        downloadLink = newLink;
+        emit DownloadLinkUpdated(newLink);
+    }
+
+    // 获取当前下载链接
+    function getDownloadLink() external view returns (string memory) {
+        return downloadLink;
     }
 
     // 转让合约所有权
