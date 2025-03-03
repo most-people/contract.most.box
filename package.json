@@ -1,5 +1,5 @@
 {
-  "name": "hardhat-project",
+  "name": "contract.most.box",
   "scripts": {
     "clear": "rm -rf ./typechain-types && rm -rf ./artifacts && rm -rf ./cache",
     "test": "hardhat test",
@@ -8,10 +8,10 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.22.7"
+    "hardhat": "^2.22.19"
   },
   "dependencies": {
-    "@nomicfoundation/hardhat-ethers": "^3.0.6",
-    "ethers": "^6.13.2"
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "ethers": "^6.13.5"
   }
 }
