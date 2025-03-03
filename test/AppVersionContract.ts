@@ -51,6 +51,23 @@ describe("AppVersionContract", function () {
     );
   });
 
+  it("应该可以一次性获取版本号和下载链接", async function () {
+    const versionNumber = "1.5.0";
+    const downloadLink = "https://example.com/app/v1.5.0";
+
+    await appVersionContract.updateVersion(versionNumber);
+    await appVersionContract.updateDownloadLink(downloadLink);
+
+    const appInfo = await appVersionContract.getAppInfo();
+    expect(appInfo[0]).to.equal(versionNumber);
+    expect(appInfo[1]).to.equal(downloadLink);
+
+    // 也可以使用解构赋值测试
+    const [version, link] = await appVersionContract.getAppInfo();
+    expect(version).to.equal(versionNumber);
+    expect(link).to.equal(downloadLink);
+  });
+
   it("非拥有者不能更新版本号和下载链接", async function () {
     await expect(
       appVersionContract.connect(addr1).updateVersion("1.0.0")

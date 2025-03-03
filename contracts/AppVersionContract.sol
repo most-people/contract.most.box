@@ -50,6 +50,15 @@ contract AppVersionContract {
         return downloadLink;
     }
 
+    // 一次性获取版本号和下载链接
+    function getAppInfo()
+        external
+        view
+        returns (string memory version, string memory link)
+    {
+        return (currentVersion, downloadLink);
+    }
+
     // 转让合约所有权
     function transferOwnership(address newOwner) external onlyOwner {
         owner = newOwner;
