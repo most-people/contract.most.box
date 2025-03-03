@@ -3,7 +3,8 @@
   "scripts": {
     "clear": "rm -rf ./typechain-types && rm -rf ./artifacts && rm -rf ./cache",
     "test": "hardhat test",
-    "deploy": "hardhat run scripts/deploy.ts --network Sepolia",
+    "deploy:testnet": "hardhat run scripts/deploy.ts --network Sepolia",
+    "deploy:mainnet": "hardhat run scripts/deploy.ts --network mainnet",
     "pnpm": "pnpm i"
   },
   "devDependencies": {

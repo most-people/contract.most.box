@@ -23,6 +23,10 @@ const config: HardhatUserConfig = {
       url: "https://sepolia.drpc.org",
       accounts: [PRIVATE_KEY],
     },
+    mainnet: {
+      url: "https://eth.llamarpc.com",
+      accounts: [PRIVATE_KEY],
+    },
   },
 };
 
