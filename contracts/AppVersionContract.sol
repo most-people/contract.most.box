@@ -35,6 +35,9 @@ contract AppVersionContract {
     // 节点管理员列表
     mapping(address => bool) private nodeManagers;
 
+    // 存储所有管理员地址的数组
+    address[] private managerAddresses;
+
     // 事件：更新应用信息时触发
     event AppInfoUpdated(
         string version,
@@ -60,6 +63,7 @@ contract AppVersionContract {
     constructor() {
         owner = msg.sender;
         nodeManagers[msg.sender] = true; // 合约部署者自动成为管理员
+        managerAddresses.push(msg.sender); // 将合约部署者添加到管理员地址数组
     }
 
     // 修饰符：只有合约拥有者才能调用
@@ -107,6 +111,7 @@ contract AppVersionContract {
     function addNodeManager(address manager) external onlyOwner {
         require(!nodeManagers[manager], "Address is already a node manager");
         nodeManagers[manager] = true;
+        managerAddresses.push(manager); // 将新管理员添加到管理员地址数组
         emit NodeManagerAdded(manager);
     }
 
@@ -115,12 +120,31 @@ contract AppVersionContract {
         require(nodeManagers[manager], "Address is not a node manager");
         require(manager != owner, "Cannot remove owner from node managers");
         nodeManagers[manager] = false;
+
+        // 从管理员地址数组中移除
+        for (uint i = 0; i < managerAddresses.length; i++) {
+            if (managerAddresses[i] == manager) {
+                if (i < managerAddresses.length - 1) {
+                    managerAddresses[i] = managerAddresses[
+                        managerAddresses.length - 1
+                    ];
+                }
+                managerAddresses.pop();
+                break;
+            }
+        }
+
         emit NodeManagerRemoved(manager);
     }
 
     // 检查是否是节点管理员
     function isNodeManager(address account) external view returns (bool) {
         return nodeManagers[account] || account == owner;
+    }
+
+    // 获取所有管理员地址
+    function getAllNodeManagers() external view returns (address[] memory) {
+        return managerAddresses;
     }
 
     // 添加节点网址 - 任何人都可以调用

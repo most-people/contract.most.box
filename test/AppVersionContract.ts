@@ -356,4 +356,32 @@ describe("AppVersionContract", function () {
       )
     ).to.be.revertedWith("New owner cannot be zero address");
   });
+
+  it("可以获取所有管理员地址", async function () {
+    // 初始状态下，只有合约拥有者是管理员
+    let managers = await appVersionContract.getAllNodeManagers();
+    expect(managers.length).to.equal(1);
+    expect(managers[0]).to.equal(owner.address);
+
+    // 添加两个新管理员
+    await appVersionContract.addNodeManager(manager.address);
+    await appVersionContract.addNodeManager(addr1.address);
+
+    // 再次获取管理员列表
+    managers = await appVersionContract.getAllNodeManagers();
+    expect(managers.length).to.equal(3);
+    expect(managers).to.include(owner.address);
+    expect(managers).to.include(manager.address);
+    expect(managers).to.include(addr1.address);
+
+    // 移除一个管理员
+    await appVersionContract.removeNodeManager(manager.address);
+
+    // 再次获取管理员列表确认移除成功
+    managers = await appVersionContract.getAllNodeManagers();
+    expect(managers.length).to.equal(2);
+    expect(managers).to.include(owner.address);
+    expect(managers).to.include(addr1.address);
+    expect(managers).to.not.include(manager.address);
+  });
 });
