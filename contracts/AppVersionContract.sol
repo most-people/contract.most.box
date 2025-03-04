@@ -9,9 +9,8 @@ contract AppVersionContract {
         string updateContent; // 更新内容
     }
 
-    // 节点信息结构体
+    // 节点信息结构体 - 精简到只保留批准状态
     struct NodeInfo {
-        address addedBy; // 添加者地址
         bool isApproved; // 是否已批准
     }
 
@@ -44,12 +43,7 @@ contract AppVersionContract {
     );
 
     // 事件：添加节点网址时触发
-    event NodeUrlAdded(
-        string nodeUrl,
-        address indexed addedBy,
-        bool isApproved
-    );
-
+    event NodeUrlAdded(string nodeUrl, bool isApproved);
     // 事件：节点状态更改时触发
     event NodeStatusChanged(string nodeUrl, bool isApproved);
 
@@ -138,10 +132,7 @@ contract AppVersionContract {
         bool isApproved = nodeManagers[msg.sender] || msg.sender == owner;
 
         // 创建新的节点信息
-        nodes[nodeUrl] = NodeInfo({
-            addedBy: msg.sender,
-            isApproved: isApproved
-        });
+        nodes[nodeUrl] = NodeInfo({isApproved: isApproved});
 
         // 添加到相应列表
         if (isApproved) {
@@ -152,7 +143,7 @@ contract AppVersionContract {
 
         nodeUrlExists[nodeUrl] = true;
 
-        emit NodeUrlAdded(nodeUrl, msg.sender, isApproved);
+        emit NodeUrlAdded(nodeUrl, isApproved);
     }
 
     // 批准节点 - 仅管理员可以调用
@@ -240,10 +231,9 @@ contract AppVersionContract {
     // 获取节点信息
     function getNodeInfo(
         string calldata nodeUrl
-    ) external view returns (address addedBy, bool isApproved) {
+    ) external view returns (bool isApproved) {
         require(nodeUrlExists[nodeUrl], "Node URL does not exist");
-        NodeInfo storage node = nodes[nodeUrl];
-        return (node.addedBy, node.isApproved);
+        return nodes[nodeUrl].isApproved;
     }
 
     // 获取已批准的节点网址
