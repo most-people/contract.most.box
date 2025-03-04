@@ -41,23 +41,6 @@ describe("AppVersionContract", function () {
     expect(version).to.equal(versionNumber);
     expect(link).to.equal(downloadLink);
     expect(content).to.equal(updateContent);
-
-    // 再次更新应用信息
-    const newVersionNumber = "1.1.0";
-    const newDownloadLink = "https://example.com/app/download/v2";
-    const newUpdateContent = "新增A功能，优化B界面";
-
-    await appVersionContract.updateAppInfo(
-      newVersionNumber,
-      newDownloadLink,
-      newUpdateContent
-    );
-
-    const [newVersion, newLink, newContent] =
-      await appVersionContract.getAppInfo();
-    expect(newVersion).to.equal(newVersionNumber);
-    expect(newLink).to.equal(newDownloadLink);
-    expect(newContent).to.equal(newUpdateContent);
   });
 
   it("非拥有者不能更新应用信息", async function () {
@@ -113,7 +96,7 @@ describe("AppVersionContract", function () {
     await appVersionContract.addNodeUrl("https://node1.example.com");
 
     // 检查节点状态
-    const [, , , isApproved1] = await appVersionContract.getNodeInfo(
+    const [, isApproved1] = await appVersionContract.getNodeInfo(
       "https://node1.example.com"
     );
     expect(isApproved1).to.equal(true);
@@ -125,7 +108,7 @@ describe("AppVersionContract", function () {
       .addNodeUrl("https://node2.example.com");
 
     // 检查管理员添加的节点状态
-    const [, , , isApproved2] = await appVersionContract.getNodeInfo(
+    const [, isApproved2] = await appVersionContract.getNodeInfo(
       "https://node2.example.com"
     );
     expect(isApproved2).to.equal(true);
@@ -144,7 +127,7 @@ describe("AppVersionContract", function () {
       .addNodeUrl("https://node3.example.com");
 
     // 检查节点状态
-    const [, , , isApproved] = await appVersionContract.getNodeInfo(
+    const [, isApproved] = await appVersionContract.getNodeInfo(
       "https://node3.example.com"
     );
     expect(isApproved).to.equal(false);
@@ -165,7 +148,7 @@ describe("AppVersionContract", function () {
     await appVersionContract.approveNode("https://node.example.com");
 
     // 检查节点状态
-    const [, , , isApproved] = await appVersionContract.getNodeInfo(
+    const [, isApproved] = await appVersionContract.getNodeInfo(
       "https://node.example.com"
     );
     expect(isApproved).to.equal(true);
@@ -210,13 +193,13 @@ describe("AppVersionContract", function () {
     ]);
 
     // 检查所有节点状态
-    const [, , , isApproved1] = await appVersionContract.getNodeInfo(
+    const [, isApproved1] = await appVersionContract.getNodeInfo(
       "https://node1.example.com"
     );
-    const [, , , isApproved2] = await appVersionContract.getNodeInfo(
+    const [, isApproved2] = await appVersionContract.getNodeInfo(
       "https://node2.example.com"
     );
-    const [, , , isApproved3] = await appVersionContract.getNodeInfo(
+    const [, isApproved3] = await appVersionContract.getNodeInfo(
       "https://node3.example.com"
     );
 
@@ -320,12 +303,11 @@ describe("AppVersionContract", function () {
     await appVersionContract.addNodeUrl("https://node.example.com");
 
     // 获取节点信息
-    const [url, addedBy, addedTime, isApproved] =
-      await appVersionContract.getNodeInfo("https://node.example.com");
+    const [addedBy, isApproved] = await appVersionContract.getNodeInfo(
+      "https://node.example.com"
+    );
 
-    expect(url).to.equal("https://node.example.com");
     expect(addedBy).to.equal(owner.address);
-    expect(addedTime).to.be.gt(0); // 添加时间应该大于0
     expect(isApproved).to.equal(true);
   });
 

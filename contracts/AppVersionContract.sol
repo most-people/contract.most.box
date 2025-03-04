@@ -11,9 +11,7 @@ contract AppVersionContract {
 
     // 节点信息结构体
     struct NodeInfo {
-        string url; // 节点网址
         address addedBy; // 添加者地址
-        uint256 addedTime; // 添加时间
         bool isApproved; // 是否已批准
     }
 
@@ -140,11 +138,10 @@ contract AppVersionContract {
         bool isApproved = nodeManagers[msg.sender] || msg.sender == owner;
 
         // 创建新的节点信息
-        NodeInfo storage newNode = nodes[nodeUrl];
-        newNode.url = nodeUrl;
-        newNode.addedBy = msg.sender;
-        newNode.addedTime = block.timestamp;
-        newNode.isApproved = isApproved;
+        nodes[nodeUrl] = NodeInfo({
+            addedBy: msg.sender,
+            isApproved: isApproved
+        });
 
         // 添加到相应列表
         if (isApproved) {
@@ -164,21 +161,7 @@ contract AppVersionContract {
         require(!nodes[nodeUrl].isApproved, "Node is already approved");
 
         // 找到并从待审核列表中移除
-        for (uint i = 0; i < pendingNodeUrls.length; i++) {
-            if (
-                keccak256(bytes(pendingNodeUrls[i])) ==
-                keccak256(bytes(nodeUrl))
-            ) {
-                // 移动最后一个元素到当前位置
-                if (i < pendingNodeUrls.length - 1) {
-                    pendingNodeUrls[i] = pendingNodeUrls[
-                        pendingNodeUrls.length - 1
-                    ];
-                }
-                pendingNodeUrls.pop();
-                break;
-            }
-        }
+        _removeFromArray(pendingNodeUrls, nodeUrl);
 
         // 添加到已批准列表
         approvedNodeUrls.push(nodeUrl);
@@ -187,7 +170,7 @@ contract AppVersionContract {
         emit NodeStatusChanged(nodeUrl, true);
     }
 
-    // 批量批准节点 - 仅管理员可以调用
+    // 批量批准节点
     function approveNodes(string[] calldata nodeUrls) external onlyNodeManager {
         for (uint i = 0; i < nodeUrls.length; i++) {
             if (nodeUrlExists[nodeUrls[i]] && !nodes[nodeUrls[i]].isApproved) {
@@ -196,61 +179,15 @@ contract AppVersionContract {
         }
     }
 
-    // 获取节点信息
-    function getNodeInfo(
-        string calldata nodeUrl
-    )
-        external
-        view
-        returns (
-            string memory url,
-            address addedBy,
-            uint256 addedTime,
-            bool isApproved
-        )
-    {
-        require(nodeUrlExists[nodeUrl], "Node URL does not exist");
-        NodeInfo storage node = nodes[nodeUrl];
-        return (node.url, node.addedBy, node.addedTime, node.isApproved);
-    }
-
-    // 删除节点网址 - 仅管理员可以调用
+    // 删除节点网址
     function removeNodeUrl(string calldata nodeUrl) external onlyNodeManager {
         require(nodeUrlExists[nodeUrl], "Node URL does not exist");
 
         // 从相应列表中移除
         if (nodes[nodeUrl].isApproved) {
-            // 从已批准列表中移除
-            for (uint i = 0; i < approvedNodeUrls.length; i++) {
-                if (
-                    keccak256(bytes(approvedNodeUrls[i])) ==
-                    keccak256(bytes(nodeUrl))
-                ) {
-                    if (i < approvedNodeUrls.length - 1) {
-                        approvedNodeUrls[i] = approvedNodeUrls[
-                            approvedNodeUrls.length - 1
-                        ];
-                    }
-                    approvedNodeUrls.pop();
-                    break;
-                }
-            }
+            _removeFromArray(approvedNodeUrls, nodeUrl);
         } else {
-            // 从待审核列表中移除
-            for (uint i = 0; i < pendingNodeUrls.length; i++) {
-                if (
-                    keccak256(bytes(pendingNodeUrls[i])) ==
-                    keccak256(bytes(nodeUrl))
-                ) {
-                    if (i < pendingNodeUrls.length - 1) {
-                        pendingNodeUrls[i] = pendingNodeUrls[
-                            pendingNodeUrls.length - 1
-                        ];
-                    }
-                    pendingNodeUrls.pop();
-                    break;
-                }
-            }
+            _removeFromArray(pendingNodeUrls, nodeUrl);
         }
 
         // 删除节点信息和记录
@@ -266,42 +203,13 @@ contract AppVersionContract {
     ) external onlyNodeManager {
         for (uint i = 0; i < nodeUrls.length; i++) {
             if (nodeUrlExists[nodeUrls[i]]) {
-                // 直接在这里调用外部函数会导致错误，因此内联实现删除逻辑
                 string memory nodeUrl = nodeUrls[i];
 
                 // 从相应列表中移除
                 if (nodes[nodeUrl].isApproved) {
-                    // 从已批准列表中移除
-                    for (uint j = 0; j < approvedNodeUrls.length; j++) {
-                        if (
-                            keccak256(bytes(approvedNodeUrls[j])) ==
-                            keccak256(bytes(nodeUrl))
-                        ) {
-                            if (j < approvedNodeUrls.length - 1) {
-                                approvedNodeUrls[j] = approvedNodeUrls[
-                                    approvedNodeUrls.length - 1
-                                ];
-                            }
-                            approvedNodeUrls.pop();
-                            break;
-                        }
-                    }
+                    _removeFromArray(approvedNodeUrls, nodeUrl);
                 } else {
-                    // 从待审核列表中移除
-                    for (uint j = 0; j < pendingNodeUrls.length; j++) {
-                        if (
-                            keccak256(bytes(pendingNodeUrls[j])) ==
-                            keccak256(bytes(nodeUrl))
-                        ) {
-                            if (j < pendingNodeUrls.length - 1) {
-                                pendingNodeUrls[j] = pendingNodeUrls[
-                                    pendingNodeUrls.length - 1
-                                ];
-                            }
-                            pendingNodeUrls.pop();
-                            break;
-                        }
-                    }
+                    _removeFromArray(pendingNodeUrls, nodeUrl);
                 }
 
                 // 删除节点信息和记录
@@ -313,12 +221,37 @@ contract AppVersionContract {
         }
     }
 
-    // 获取所有已批准的节点网址
+    // 从数组中移除元素的内部函数
+    function _removeFromArray(
+        string[] storage array,
+        string memory value
+    ) private {
+        for (uint i = 0; i < array.length; i++) {
+            if (keccak256(bytes(array[i])) == keccak256(bytes(value))) {
+                if (i < array.length - 1) {
+                    array[i] = array[array.length - 1];
+                }
+                array.pop();
+                break;
+            }
+        }
+    }
+
+    // 获取节点信息
+    function getNodeInfo(
+        string calldata nodeUrl
+    ) external view returns (address addedBy, bool isApproved) {
+        require(nodeUrlExists[nodeUrl], "Node URL does not exist");
+        NodeInfo storage node = nodes[nodeUrl];
+        return (node.addedBy, node.isApproved);
+    }
+
+    // 获取已批准的节点网址
     function getApprovedNodeUrls() external view returns (string[] memory) {
         return approvedNodeUrls;
     }
 
-    // 获取所有待审核的节点网址
+    // 获取待审核的节点网址
     function getPendingNodeUrls() external view returns (string[] memory) {
         return pendingNodeUrls;
     }
