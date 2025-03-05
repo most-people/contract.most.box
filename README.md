@@ -1,12 +1,12 @@
 # AppVersionContract
 
-一个简单的以太坊智能合约，用于管理应用版本号和下载链接。
+一个基于以太坊的智能合约，用于管理应用版本信息和节点网络。
 
-## 功能
+## 功能概述
 
-- 存储应用版本号
-- 存储应用下载链接
-- 权限控制
+- **应用信息管理**：存储和更新应用版本号、下载链接和更新内容
+- **节点网络管理**：添加、批准和删除节点
+- **权限控制系统**：合约拥有者和节点管理员分级权限管理
 
 ## 安装
 
@@ -16,7 +16,7 @@ npm install
 
 ## 配置
 
-创建`.env`文件，添加：
+创建 `.env` 文件，添加以下内容：
 
 ```
 PRIVATE_KEY=你的钱包私钥
@@ -24,15 +24,42 @@ PRIVATE_KEY=你的钱包私钥
 
 ## 测试
 
+运行测试套件以验证合约功能：
+
 ```bash
-npm run test
+npx hardhat test
 ```
 
 ## 部署
 
+部署合约到目标网络：
+
 ```bash
-npm run deploy
+npx hardhat run scripts/deploy.ts --network <网络名称>
 ```
+
+支持的网络在 `hardhat.config.ts` 中配置。
+
+## 合约功能
+
+### 应用信息管理
+
+- 更新应用版本、下载链接和更新内容
+- 获取完整应用信息
+
+### 节点管理
+
+- 添加新节点（任何人都可以提交）
+- 批准待审核节点（仅管理员）
+- 批量批准节点（仅管理员）
+- 删除节点（仅管理员）
+- 批量删除节点（仅管理员）
+
+### 权限管理
+
+- 添加/移除节点管理员
+- 转让合约所有权
+- 查询管理员列表和所有者
 
 ## 调用示例
 
@@ -40,7 +67,7 @@ npm run deploy
 // 使用ethers.js调用合约
 const { ethers } = require("ethers");
 const abi =
-  require("./artifacts\\contracts\\AppVersionContract.sol\\AppVersionContract.json").abi;
+  require("./artifacts/contracts/AppVersionContract.sol/AppVersionContract.json").abi;
 
 // 连接合约
 const provider = new ethers.providers.JsonRpcProvider("YOUR_RPC_URL");
@@ -74,9 +101,9 @@ async function removeNodeManager(managerAddress) {
   console.log(`已移除节点管理员: ${managerAddress}`);
 }
 
-async function isNodeManager(address) {
-  const isManager = await contract.isNodeManager(address);
-  console.log(`${address} 是否为节点管理员: ${isManager}`);
+async function getAllNodeManagers() {
+  const managers = await contract.getAllNodeManagers();
+  console.log("所有节点管理员:", managers);
 }
 
 // 节点管理
@@ -112,12 +139,8 @@ async function removeNodeUrls(urls) {
 
 // 节点查询
 async function getNodeInfo(url) {
-  const [nodeUrl, addedBy, addedTime, isApproved] = await contract.getNodeInfo(
-    url
-  );
-  console.log("节点网址:", nodeUrl);
-  console.log("添加者:", addedBy);
-  console.log("添加时间:", new Date(addedTime * 1000).toLocaleString());
+  const isApproved = await contract.getNodeInfo(url);
+  console.log("节点网址:", url);
   console.log("是否已批准:", isApproved);
 }
 
@@ -212,31 +235,25 @@ async function automatedNodeManagement() {
 // 模拟节点健康检查函数
 async function checkNodeHealth(nodeUrl) {
   // 这里实现实际的节点健康检查逻辑
-  // 例如：发送HTTP请求检查节点响应
   try {
-    // 模拟网络请求
+    // 实际应用中应替换为真实的健康检查请求
     // const response = await fetch(`${nodeUrl}/health`);
     // return response.status === 200;
 
-    // 这里只是示例，返回随机结果
-    return Math.random() > 0.3; // 70%概率健康
+    return Math.random() > 0.3; // 示例：70%概率健康
   } catch (error) {
     console.error(`节点健康检查错误: ${nodeUrl}`, error);
     return false;
   }
 }
-
-// 设置定时任务，定期运行自动节点管理
-function setupAutomatedNodeManagement(intervalMinutes = 10) {
-  console.log(`启动自动节点管理服务，检查间隔: ${intervalMinutes}分钟`);
-
-  // 首次运行
-  automatedNodeManagement();
-
-  // 设置定期运行
-  setInterval(automatedNodeManagement, intervalMinutes * 60 * 1000);
-}
 ```
+
+## 合约架构
+
+- **应用信息结构体**：存储版本号、下载链接和更新内容
+- **节点信息结构体**：存储节点批准状态
+- **权限系统**：合约拥有者和节点管理员分级权限控制
+- **事件系统**：记录所有重要操作，便于链下服务跟踪
 
 ## 许可证
 

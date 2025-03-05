@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-contract AppVersionContract {
+// 添加重入保护
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+// 使用OpenZeppelin的Ownable合约
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract AppVersionContract is ReentrancyGuard, Ownable {
     // 应用信息结构体
     struct AppInfo {
         string version; // 版本号
@@ -187,9 +193,15 @@ contract AppVersionContract {
 
     // 批量批准节点
     function approveNodes(string[] calldata nodeUrls) external onlyNodeManager {
-        for (uint i = 0; i < nodeUrls.length; i++) {
-            if (nodeUrlExists[nodeUrls[i]] && !nodes[nodeUrls[i]].isApproved) {
-                approveNode(nodeUrls[i]);
+        uint256 length = nodeUrls.length;
+        for (uint i = 0; i < length; i++) {
+            string memory nodeUrl = nodeUrls[i];
+            if (nodeUrlExists[nodeUrl] && !nodes[nodeUrl].isApproved) {
+                // 直接在这里执行操作，而不是调用approveNode函数，减少函数调用开销
+                _removeFromArray(pendingNodeUrls, nodeUrl);
+                approvedNodeUrls.push(nodeUrl);
+                nodes[nodeUrl].isApproved = true;
+                emit NodeStatusChanged(nodeUrl, true);
             }
         }
     }
@@ -216,21 +228,19 @@ contract AppVersionContract {
     function removeNodeUrls(
         string[] calldata nodeUrls
     ) external onlyNodeManager {
-        for (uint i = 0; i < nodeUrls.length; i++) {
-            if (nodeUrlExists[nodeUrls[i]]) {
-                string memory nodeUrl = nodeUrls[i];
-
+        uint256 length = nodeUrls.length;
+        for (uint i = 0; i < length; i++) {
+            string memory nodeUrl = nodeUrls[i];
+            if (nodeUrlExists[nodeUrl]) {
                 // 从相应列表中移除
                 if (nodes[nodeUrl].isApproved) {
                     _removeFromArray(approvedNodeUrls, nodeUrl);
                 } else {
                     _removeFromArray(pendingNodeUrls, nodeUrl);
                 }
-
                 // 删除节点信息和记录
                 delete nodeUrlExists[nodeUrl];
                 delete nodes[nodeUrl];
-
                 emit NodeUrlRemoved(nodeUrl);
             }
         }
