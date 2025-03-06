@@ -24,7 +24,7 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
     },
     optimism: {
-      url: "https://mainnet.optimism.io",
+      url: "https://optimism.llamarpc.com",
       accounts: [PRIVATE_KEY],
       chainId: 10,
     },
