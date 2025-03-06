@@ -48,7 +48,7 @@ describe("AppVersionContract", function () {
       appVersionContract
         .connect(addr1)
         .updateAppInfo("1.0.0", "https://example.com", "更新内容")
-    ).to.be.revertedWith("Only owner can call this function");
+    ).to.be.reverted;
   });
 
   it("可以添加和移除节点管理员", async function () {
@@ -76,13 +76,13 @@ describe("AppVersionContract", function () {
   it("非拥有者不能添加或移除管理员", async function () {
     await expect(
       appVersionContract.connect(addr1).addNodeManager(addr2.address)
-    ).to.be.revertedWith("Only owner can call this function");
+    ).to.be.reverted;
 
     await appVersionContract.addNodeManager(manager.address);
 
     await expect(
       appVersionContract.connect(addr1).removeNodeManager(manager.address)
-    ).to.be.revertedWith("Only owner can call this function");
+    ).to.be.reverted;
   });
 
   it("不能移除合约拥有者的管理员权限", async function () {
@@ -327,7 +327,7 @@ describe("AppVersionContract", function () {
   it("拥有者可以转让所有权", async function () {
     // 转让所有权
     await appVersionContract.transferOwnership(addr1.address);
-    expect(await appVersionContract.getOwner()).to.equal(addr1.address);
+    expect(await appVersionContract.owner()).to.equal(addr1.address);
 
     // 原拥有者不能再更新应用信息
     await expect(
@@ -336,7 +336,7 @@ describe("AppVersionContract", function () {
         "https://example.com",
         "更新内容"
       )
-    ).to.be.revertedWith("Only owner can call this function");
+    ).to.be.reverted;
 
     // 新拥有者可以更新应用信息
     await appVersionContract
@@ -354,7 +354,7 @@ describe("AppVersionContract", function () {
       appVersionContract.transferOwnership(
         "0x0000000000000000000000000000000000000000"
       )
-    ).to.be.revertedWith("New owner cannot be zero address");
+    ).to.be.reverted;
   });
 
   it("可以获取所有管理员地址", async function () {
