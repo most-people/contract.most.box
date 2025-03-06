@@ -18,14 +18,15 @@ const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {},
-    Sepolia: {
+    sepolia: {
       // RPC
       url: "https://sepolia.drpc.org",
       accounts: [PRIVATE_KEY],
     },
-    mainnet: {
-      url: "https://eth.llamarpc.com",
+    optimism: {
+      url: "https://mainnet.optimism.io",
       accounts: [PRIVATE_KEY],
+      chainId: 10,
     },
   },
 };

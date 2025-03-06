@@ -2,9 +2,9 @@
 pragma solidity ^0.8.24;
 
 // 添加重入保护
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-// 使用OpenZeppelin的Ownable合约
+// 使用 OpenZeppelin 的 Ownable 合约
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AppVersionContract is ReentrancyGuard, Ownable {
@@ -35,9 +35,6 @@ contract AppVersionContract is ReentrancyGuard, Ownable {
     // 节点网址是否存在
     mapping(string => bool) private nodeUrlExists;
 
-    // 合约拥有者地址
-    address private owner;
-
     // 节点管理员列表
     mapping(address => bool) private nodeManagers;
 
@@ -66,22 +63,15 @@ contract AppVersionContract is ReentrancyGuard, Ownable {
     event NodeManagerRemoved(address indexed manager);
 
     // 构造函数：设置合约拥有者
-    constructor() {
-        owner = msg.sender;
+    constructor() Ownable(msg.sender) {
         nodeManagers[msg.sender] = true; // 合约部署者自动成为管理员
         managerAddresses.push(msg.sender); // 将合约部署者添加到管理员地址数组
-    }
-
-    // 修饰符：只有合约拥有者才能调用
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function");
-        _;
     }
 
     // 修饰符：只有节点管理员才能调用
     modifier onlyNodeManager() {
         require(
-            nodeManagers[msg.sender] || msg.sender == owner,
+            nodeManagers[msg.sender] || msg.sender == owner(),
             "Only node manager can call this function"
         );
         _;
@@ -124,7 +114,7 @@ contract AppVersionContract is ReentrancyGuard, Ownable {
     // 移除节点管理员
     function removeNodeManager(address manager) external onlyOwner {
         require(nodeManagers[manager], "Address is not a node manager");
-        require(manager != owner, "Cannot remove owner from node managers");
+        require(manager != owner(), "Cannot remove owner from node managers");
         nodeManagers[manager] = false;
 
         // 从管理员地址数组中移除
@@ -145,7 +135,7 @@ contract AppVersionContract is ReentrancyGuard, Ownable {
 
     // 检查是否是节点管理员
     function isNodeManager(address account) external view returns (bool) {
-        return nodeManagers[account] || account == owner;
+        return nodeManagers[account] || account == owner();
     }
 
     // 获取所有管理员地址
@@ -159,7 +149,7 @@ contract AppVersionContract is ReentrancyGuard, Ownable {
         require(!nodeUrlExists[nodeUrl], "Node URL already exists");
 
         // 如果是管理员，直接批准节点
-        bool isApproved = nodeManagers[msg.sender] || msg.sender == owner;
+        bool isApproved = nodeManagers[msg.sender] || msg.sender == owner();
 
         // 创建新的节点信息
         nodes[nodeUrl] = NodeInfo({isApproved: isApproved});
@@ -288,16 +278,5 @@ contract AppVersionContract is ReentrancyGuard, Ownable {
     // 获取待审核节点数量
     function getPendingNodeCount() external view returns (uint) {
         return pendingNodeUrls.length;
-    }
-
-    // 转让合约所有权
-    function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "New owner cannot be zero address");
-        owner = newOwner;
-    }
-
-    // 获取合约拥有者
-    function getOwner() external view returns (address) {
-        return owner;
     }
 }

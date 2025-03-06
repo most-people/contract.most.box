@@ -20,7 +20,7 @@ importers:
     devDependencies:
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(yxs332fegacslgqk7a2fgc3w5a)
+        version: 5.0.0(255b419285c42d96aff2854ea3111afa)
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -2476,7 +2476,7 @@ snapshots:
       ethereumjs-util: 7.1.5
       hardhat: 2.22.19(bufferutil@4.0.5)(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.5.4))(typescript@5.5.4)(utf-8-validate@5.0.7)
 
-  '@nomicfoundation/hardhat-toolbox@5.0.0(yxs332fegacslgqk7a2fgc3w5a)':
+  '@nomicfoundation/hardhat-toolbox@5.0.0(255b419285c42d96aff2854ea3111afa)':
     dependencies:
       '@nomicfoundation/hardhat-chai-matchers': 2.0.7(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.5(bufferutil@4.0.5)(utf-8-validate@5.0.7))(hardhat@2.22.19(bufferutil@4.0.5)(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.5.4))(typescript@5.5.4)(utf-8-validate@5.0.7)))(chai@4.5.0)(ethers@6.13.5(bufferutil@4.0.5)(utf-8-validate@5.0.7))(hardhat@2.22.19(bufferutil@4.0.5)(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.5.4))(typescript@5.5.4)(utf-8-validate@5.0.7))
       '@nomicfoundation/hardhat-ethers': 3.0.8(ethers@6.13.5(bufferutil@4.0.5)(utf-8-validate@5.0.7))(hardhat@2.22.19(bufferutil@4.0.5)(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.5.4))(typescript@5.5.4)(utf-8-validate@5.0.7))
