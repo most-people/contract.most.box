@@ -28,6 +28,11 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
       chainId: 10,
     },
+    MEGA: {
+      url: "https://carrot.megaeth.com/rpc",
+      accounts: [PRIVATE_KEY],
+      chainId: 6342,
+    },
   },
 };
 
